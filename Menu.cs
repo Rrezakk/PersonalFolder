@@ -1,5 +1,6 @@
-﻿namespace PersonalFolder;
-
+﻿using System.Drawing;
+using Console = Colorful.Console;
+namespace PersonalFolder;
 public class Menu
 {
     private bool _cancelation;
@@ -11,10 +12,12 @@ public class Menu
     }
     private static void ErrorMessage()
     {
-        Console.WriteLine("Invalid choice! Try again");
+        Console.WriteLine("Invalid choice! Try again",Color.Red);
     }
     public void Show()
     {
+        _cancelation = !CheckPass(_enc.Key4);
+        Console.WriteLine($"Invalid password!",Color.Red);
         while (!_cancelation)
         {
             Tick();
@@ -57,20 +60,10 @@ public class Menu
             ErrorMessage();
         
     }
-
     private static bool CheckPass(string password)
     {
-        return false;//sha256 hashing 
+        return HashingHelper.ReadHashFile(Program.PasswordHashFilePath) == HashingHelper.Sha256Encrypt(password);//sha256 hash checking 
     }
-    // private static bool CheckPass(string password)
-    // {
-    //     if (!File.Exists(Program.LockerTestFilePath)) return false;
-    //     var localSecret = File.ReadAllText(Program.LockerTestFilePath);
-    //     var iss = EncryptionHelper.DecryptText(localSecret, password) == Program.Secret;
-    //     Console.WriteLine(iss ? "Password is right" : "Wrong password!");
-    //     return iss;
-    // }
-
     private static void AddFilesT()
     {
         Console.Write("Enter folder/file path: ");
@@ -98,13 +91,9 @@ public class Menu
             Console.WriteLine("Error encrypting!");
         }
     }
-    // private static void GenerateValidationFile()
-    // {
-    //     File.WriteAllText(Program.LockerTestFilePath, EncryptionHelper.EncryptText(Program.Secret, _enc.Key4));
-    // }
     private static void Init()
     {
-        //GenerateValidationFile();
+        HashingHelper.Sha256EncryptToFile(_enc.Key4, Program.PasswordHashFilePath);
         AddFilesT();
     }
     private static void DecryptFiles()
@@ -127,6 +116,6 @@ public class Menu
     {
         if (!CheckPass(_enc.Key4))
             return;
-        Console.WriteLine("Not available now");
+        Console.WriteLine("Not available now",Color.Red);
     }
 }

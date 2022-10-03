@@ -1,12 +1,8 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-
+﻿using Console = Colorful.Console;
 namespace PersonalFolder;
-
-internal class Program
+internal static class Program
 {
-    public const string Secret = "fawanognoOIH#M*FN*F#WFO(b3w8)";
-    //public static readonly string LockerTestFilePath = Environment.CurrentDirectory + "\\lockerFile.lsf";
+    public static readonly string PasswordHashFilePath = Environment.CurrentDirectory + "\\hash.lsf";
     public static readonly string LockerDirectoryPath = Environment.CurrentDirectory + "\\data\\";
     public static readonly string DesktopUnlockedFolderPath  = Environment.CurrentDirectory +"\\UnlockedSecretFolder\\";
     private static void CheckDirs()

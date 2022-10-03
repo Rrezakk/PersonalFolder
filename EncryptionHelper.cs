@@ -1,12 +1,10 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-
 namespace PersonalFolder;
 public class EncryptionHelper
 {
     private const CipherMode CipherMode = System.Security.Cryptography.CipherMode.CBC;
     private const string SaltValue = "SodiumChloride";
-    private const int KeySize = 32;
     public readonly string Key4;
     public EncryptionHelper(string key4)
     {
@@ -87,6 +85,8 @@ public class EncryptionHelper
     }
     public void DecryptFile(string filePath)
     {
+        if (!Directory.Exists(Program.DesktopUnlockedFolderPath))
+            Directory.CreateDirectory(Program.DesktopUnlockedFolderPath);
         var containment = File.ReadAllBytes(filePath);
         var decryptedContainment = DecryptBytes(containment);
         var newFilePath = Program.DesktopUnlockedFolderPath + Path.GetFileName(filePath);
