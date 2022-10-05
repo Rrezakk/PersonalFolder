@@ -5,6 +5,7 @@ public class Menu
 {
     private bool _cancelation;
     private static EncryptionHelper _enc = null!;
+    public delegate void MenuDelegateType();
     public Menu(string password)
     {
         _cancelation = false;
@@ -16,8 +17,8 @@ public class Menu
     }
     public void Show()
     {
-        _cancelation = !CheckPass(_enc.Key4);
-        Console.WriteLine($"Invalid password!",Color.Red);
+        //_cancelation = !CheckPass(_enc.Key4);
+        //Console.WriteLine($"Invalid password!",Color.Red);
         while (!_cancelation)
         {
             Tick();
@@ -40,13 +41,13 @@ public class Menu
                     Init();
                     break;
                 case 1:
-                    DecryptFiles();
+                    ExecuteIfProvided(DecryptFiles);
                     break;
                 case 2:
-                    AddFiles();
+                    ExecuteIfProvided(AddFiles);
                     break;
                 case 3:
-                    Restore();
+                    ExecuteIfProvided(Restore);
                     break;
                 case 4:
                     _cancelation = true;
@@ -60,9 +61,29 @@ public class Menu
             ErrorMessage();
         
     }
+
+    private static void ExecuteIfProvided(MenuDelegateType method)
+    {
+        if (CheckPass(_enc.Key4))
+        {
+            method?.Invoke();
+        }
+        else
+        {
+            Console.WriteLine("Password is not valid! Denied",Color.Red);
+        }
+    }
     private static bool CheckPass(string password)
     {
-        return HashingHelper.ReadHashFile(Program.PasswordHashFilePath) == HashingHelper.Sha256Encrypt(password);//sha256 hash checking 
+        try
+        {
+            return HashingHelper.ReadHashFile(Program.PasswordHashFilePath) == HashingHelper.Sha256Encrypt(password);//sha256 hash checking 
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
+        }
+        
     }
     private static void AddFilesT()
     {

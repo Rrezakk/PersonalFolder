@@ -2,6 +2,8 @@
 namespace PersonalFolder;
 internal static class Program
 {
+    //maybe hashtable for filenames in encrypted file?)))
+    //possible encryption problems
     public static readonly string PasswordHashFilePath = Environment.CurrentDirectory + "\\hash.lsf";
     public static readonly string LockerDirectoryPath = Environment.CurrentDirectory + "\\data\\";
     public static readonly string DesktopUnlockedFolderPath  = Environment.CurrentDirectory +"\\UnlockedSecretFolder\\";
