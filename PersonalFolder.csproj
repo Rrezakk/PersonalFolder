@@ -11,4 +11,10 @@
       <PackageReference Include="Colorful.Console" Version="1.2.15" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="sdelete.exe">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -12,6 +12,7 @@ public class Menu
     private readonly IFileNameEncryptor _fileNameEncryptor = new StandardFileNameEncryptor();
     private readonly IFileNameLegalizer _fileNameLegalizer = new StandardFileNameLegalizer();
     private readonly IFileEncryptor _fileEncryptor = new StandardFileEncryptor();
+    private readonly IFileDeleter _fileDeleter = new SafeFileDeleter();
 
     #region Menu staff
     private bool _cancelation;
@@ -112,10 +113,24 @@ public class Menu
         }
         catch(Exception e)
         {
-            throw;
             Console.WriteLine(e);
             Console.WriteLine("Error encrypting!");
         }
+        Console.Write($"If you want to delete source files safely, type: ");
+        Console.WriteLine("delete",Color.Red);
+        Console.WriteLine($"Make sure that your files encrypted successfully before! You will not able to recover old files",Color.Red);
+        var choice = Console.ReadLine();
+        if (choice.Trim(' ') == "delete")
+        {
+            //safe delete
+            foreach (var file in Directory.GetFiles(path))
+            {
+                _fileDeleter.DeleteFile(file);
+            }
+            Console.WriteLine($"Deleted.",Color.Red);
+        }
+        else
+            Console.WriteLine($"Not deleted.",Color.Aquamarine);
     }
     private void EncryptSingleFile(string fileName)
     {
