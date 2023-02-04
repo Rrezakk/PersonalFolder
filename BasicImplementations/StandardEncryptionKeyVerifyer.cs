@@ -6,7 +6,7 @@ public class StandardEncryptionKeyVerifyer:IEncryptionKeyVerifyer
 {
     private readonly string _hashFilePath;
     private readonly IKeyHasher _keyHasher;
-    public StandardEncryptionKeyVerifyer(string hashFilePath,IKeyHasher hasher, IKeyHasher keyHasher)
+    public StandardEncryptionKeyVerifyer(string hashFilePath, IKeyHasher keyHasher)
     {
         _hashFilePath = hashFilePath;
         _keyHasher = keyHasher;

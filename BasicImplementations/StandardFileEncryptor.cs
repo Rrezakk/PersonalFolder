@@ -5,11 +5,11 @@ namespace PersonalFolder.BasicImplementations;
 
 public class StandardFileEncryptor:IFileEncryptor
 {
-    public void Encrypt(string sourceFilePath, string destinationFileName, byte[]? key)
+    public void Encrypt(string sourceFilePath, string destinationFilePath, byte[]? key)
     {
         // Encrypt the source file and write it to the destination file.
         using var sourceStream = File.OpenRead(sourceFilePath);
-        using var destinationStream = File.Create(destinationFileName);
+        using var destinationStream = File.Create(destinationFilePath);
         using var provider = new AesCryptoServiceProvider();
         if (key != null)
         {
@@ -25,11 +25,11 @@ public class StandardFileEncryptor:IFileEncryptor
             Console.WriteLine($"Key was null, generated: {Convert.ToBase64String(provider.Key)}");
         }
     }
-    public void Decrypt(string sourceFilePath, string destinationFileName, byte[] key)
+    public void Decrypt(string sourceFilePath, string destinationFilePath, byte[] key)
     {
         // Decrypt the source file and write it to the destination file.
         using var sourceStream = File.OpenRead(sourceFilePath);
-        using var destinationStream = File.Create(destinationFileName);
+        using var destinationStream = File.Create(destinationFilePath);
         using var provider = new AesCryptoServiceProvider();
         var iv = new byte[provider.IV.Length];
         var read = sourceStream.Read(iv, 0, iv.Length);

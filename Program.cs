@@ -1,18 +1,23 @@
-﻿using Console = Colorful.Console;
+﻿using PersonalFolder.BasicImplementations;
+using PersonalFolder.Interfaces;
+using Console = Colorful.Console;
 namespace PersonalFolder;
 internal static class Program
 {
     //maybe hashtable for filenames in encrypted file?)))
     //possible encryption problems
+    
+    
+    //It is not safe to use similar keys for encryption files and its names but who cares? It's just security for common users)
     public static readonly string PasswordHashFilePath = Environment.CurrentDirectory + "\\hash.lsf";
     public static readonly string LockerDirectoryPath = Environment.CurrentDirectory + "\\data\\";
-    public static readonly string DesktopUnlockedFolderPath  = Environment.CurrentDirectory +"\\UnlockedSecretFolder\\";
+    public static readonly string UnlockedFolderPath  = Environment.CurrentDirectory +"\\UnlockedSecretFolder\\";
     private static void CheckDirs()
     {
         if (!Directory.Exists(LockerDirectoryPath))
             Directory.CreateDirectory(LockerDirectoryPath);
-        if (!Directory.Exists(DesktopUnlockedFolderPath))
-            Directory.CreateDirectory(DesktopUnlockedFolderPath);
+        if (!Directory.Exists(UnlockedFolderPath))
+            Directory.CreateDirectory(UnlockedFolderPath);
     }
     public static void Main()
     {

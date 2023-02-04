@@ -1,16 +1,19 @@
-﻿using System.Drawing;
+﻿using PersonalFolder.BasicImplementations;
+using PersonalFolder.Interfaces;
+using System.Drawing;
 using Console = Colorful.Console;
 namespace PersonalFolder;
 public class Menu
 {
+    private readonly IEncryptionKeyVerifyer _verifyer;
+    private readonly byte[] _key;
+    private readonly IFileNameEncryptor _fileNameEncryptor = new StandardFileNameEncryptor();
+    private readonly IFileNameLegalizer _fileNameLegalizer = new StandardFileNameLegalizer();
+    private readonly IFileEncryptor _fileEncryptor = new StandardFileEncryptor();
+
+    #region Menu staff
     private bool _cancelation;
-    private static EncryptionHelper _enc = null!;
     public delegate void MenuDelegateType();
-    public Menu(string password)
-    {
-        _cancelation = false;
-        _enc = new EncryptionHelper(password);
-    }
     private static void ErrorMessage()
     {
         Console.WriteLine("Invalid choice! Try again",Color.Red);
@@ -22,6 +25,28 @@ public class Menu
             Tick();
         }
     }
+    public Menu(string password)
+    {
+        IKeyEncoder keyEncoder = new StandartKeyEncoder();
+        _key = keyEncoder.Encode(password);
+        IKeyHasher keyHasher = new StandardKeyHasher();
+        _verifyer = new StandardEncryptionKeyVerifyer(Program.PasswordHashFilePath,keyHasher);
+
+        _cancelation = false;
+    }
+    private void ExecuteIfProvided(MenuDelegateType method)
+    {
+        if (_verifyer.VerifyKey(_key))
+        {
+            method?.Invoke();
+        }
+        else
+        {
+            Console.WriteLine("Password is not valid! Denied",Color.Red);
+        }
+    }
+    #endregion
+    
     private void Tick()
     {
         Console.WriteLine("0:Init");
@@ -39,10 +64,10 @@ public class Menu
                     Init();
                     break;
                 case 1:
-                    ExecuteIfProvided(DecryptFiles);
+                    ExecuteIfProvided(DecryptAllFiles);
                     break;
                 case 2:
-                    ExecuteIfProvided(AddFiles);
+                    ExecuteIfProvided(EncryptAllFiles);
                     break;
                 case 3:
                     ExecuteIfProvided(Restore);
@@ -57,32 +82,10 @@ public class Menu
         }
         else
             ErrorMessage();
-        
     }
-    private static void ExecuteIfProvided(MenuDelegateType method)
-    {
-        if (CheckPass(_enc.Key4))
-        {
-            method?.Invoke();
-        }
-        else
-        {
-            Console.WriteLine("Password is not valid! Denied",Color.Red);
-        }
-    }
-    private static bool CheckPass(string password)
-    {
-        try
-        {
-            return HashingHelper.ReadHashFile(Program.PasswordHashFilePath) == HashingHelper.Sha256Encrypt(password);//sha256 hash checking 
-        }
-        catch (FileNotFoundException)
-        {
-            return false;
-        }
-        
-    }
-    private static void AddFilesT()
+
+    #region Implementations
+    private void EncryptAllFilesT()
     {
         Console.Write("Enter folder/file path: ");
         var path = Console.ReadLine()??"";
@@ -91,49 +94,68 @@ public class Menu
             var attr = File.GetAttributes(path);
             if (attr.HasFlag(FileAttributes.Directory))
             {
-                var filess = Directory.GetFiles(path);
-                foreach (var filePath in filess)
+                var files = Directory.GetFiles(path);
+                foreach (var filePath in files)
                 {
-                    _enc.EncryptFile(filePath);
+                    EncryptSingleFile(filePath);
                 }
             }
             else
             {
-                _enc.EncryptFile(path);
+                EncryptSingleFile(path);
             }
             Console.WriteLine("Sucessfully encrypted!");
         }
         catch(Exception e)
         {
+            throw;
             Console.WriteLine(e);
             Console.WriteLine("Error encrypting!");
         }
     }
-    private static void Init()
+    private void EncryptSingleFile(string fileName)
     {
-        HashingHelper.Sha256EncryptToFile(_enc.Key4, Program.PasswordHashFilePath);
-        AddFilesT();
+        var filename = Path.GetFileName(fileName);
+        var encryptedFileName = _fileNameEncryptor.EncryptName(filename,_key);
+        var legalEncryptedFileName = _fileNameLegalizer.Legalize(encryptedFileName);
+        var destinationFilePath = Program.LockerDirectoryPath + legalEncryptedFileName;
+        _fileEncryptor.Encrypt(fileName,destinationFilePath,_key);
     }
-    private static void DecryptFiles()
+    private void DecryptAllFilesT()
     {
-        if (!CheckPass(_enc.Key4))
-            return;
         var files = Directory.GetFiles(Program.LockerDirectoryPath);
         foreach (var filePath in files)
         {
-            _enc.DecryptFile(filePath);
+            DecryptSingleFile(filePath);
         }
     }
-    private static void AddFiles()
+    private void DecryptSingleFile(string fileName)
     {
-        if (!CheckPass(_enc.Key4))
-            return;
-        AddFilesT();
+        var sourceFileName = Path.GetFileName(fileName);
+        var restoredLegalFileName = _fileNameLegalizer.FromLegalized(sourceFileName);
+        var decryptedFileName = _fileNameEncryptor.DecryptName(restoredLegalFileName,_key);
+        var destinationFilePath = Program.UnlockedFolderPath + decryptedFileName;
+        _fileEncryptor.Decrypt(fileName,destinationFilePath,_key);
+    }
+    #endregion
+    
+    #region Menu choices
+    private void Init()
+    {
+        _verifyer.WriteVerificationFile(_key);
+        EncryptAllFilesT();
+    }
+    private void EncryptAllFiles()
+    {
+        EncryptAllFilesT();
+    }
+    private void DecryptAllFiles()
+    {
+        DecryptAllFilesT();
     }
     private static void Restore()
     {
-        if (!CheckPass(_enc.Key4))
-            return;
         Console.WriteLine("Not available now",Color.Red);
     }
+    #endregion
 }
