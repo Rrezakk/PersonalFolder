@@ -5,8 +5,10 @@ using Console = Colorful.Console;
 namespace PersonalFolder;
 public class Menu
 {
+    private readonly IKeyEncoder _keyEncoder = new StandartKeyEncoder();
+    private readonly IKeyHasher _keyHasher = new StandardKeyHasher();
     private readonly IEncryptionKeyVerifyer _verifyer;
-    private readonly byte[] _key;
+    private byte[] _key;
     private readonly IFileNameEncryptor _fileNameEncryptor = new StandardFileNameEncryptor();
     private readonly IFileNameLegalizer _fileNameLegalizer = new StandardFileNameLegalizer();
     private readonly IFileEncryptor _fileEncryptor = new StandardFileEncryptor();
@@ -27,11 +29,8 @@ public class Menu
     }
     public Menu(string password)
     {
-        IKeyEncoder keyEncoder = new StandartKeyEncoder();
-        _key = keyEncoder.Encode(password);
-        IKeyHasher keyHasher = new StandardKeyHasher();
-        _verifyer = new StandardEncryptionKeyVerifyer(Program.PasswordHashFilePath,keyHasher);
-
+        _key = _keyEncoder.Encode(password);
+        _verifyer = new StandardEncryptionKeyVerifyer(Program.PasswordHashFilePath,_keyHasher);
         _cancelation = false;
     }
     private void ExecuteIfProvided(MenuDelegateType method)
@@ -53,7 +52,8 @@ public class Menu
         Console.WriteLine("1:Decrypt");
         Console.WriteLine("2:AddFiles");
         Console.WriteLine("3:Restore");
-        Console.WriteLine("4:Leave");
+        Console.WriteLine("4:Re-enter password");
+        Console.WriteLine("5:Leave");
         Console.Write("Choose action: ");
         var choice = Console.ReadLine()??"";
         if (int.TryParse(choice, out var choiceNum))
@@ -73,6 +73,9 @@ public class Menu
                     ExecuteIfProvided(Restore);
                     break;
                 case 4:
+                    ReEnterPassword();
+                    break;
+                case 5:
                     _cancelation = true;
                     break;
                 default:
@@ -83,6 +86,7 @@ public class Menu
         else
             ErrorMessage();
     }
+    
 
     #region Implementations
     private void EncryptAllFilesT()
@@ -152,6 +156,17 @@ public class Menu
     private void DecryptAllFiles()
     {
         DecryptAllFilesT();
+    }
+    private void ReEnterPassword()
+    {
+        Console.Write($"Enter your password: ");
+        var password = Console.ReadLine();
+        if (string.IsNullOrEmpty(password))
+        {
+            Console.WriteLine($"Wrong password characters - not affected");
+            return;
+        }
+        _key = _keyEncoder.Encode(password);
     }
     private static void Restore()
     {
