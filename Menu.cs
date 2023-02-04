@@ -17,8 +17,6 @@ public class Menu
     }
     public void Show()
     {
-        //_cancelation = !CheckPass(_enc.Key4);
-        //Console.WriteLine($"Invalid password!",Color.Red);
         while (!_cancelation)
         {
             Tick();
@@ -61,7 +59,6 @@ public class Menu
             ErrorMessage();
         
     }
-
     private static void ExecuteIfProvided(MenuDelegateType method)
     {
         if (CheckPass(_enc.Key4))

@@ -6,7 +6,7 @@ public class EncryptionHelper
     private const CipherMode CipherMode = System.Security.Cryptography.CipherMode.CBC;
     private const string SaltValue = "SodiumChloride";
     public readonly string Key4;
-    private static readonly Dictionary<string, string> map = new()
+    private static readonly Dictionary<string, string> Map = new()
     {
         {"<", "($lessthan$)"},
         {">", "($greater than$)"},
@@ -90,11 +90,11 @@ public class EncryptionHelper
     }
     private static string ReplaceUnavailable(string str)
     {
-        return map.Aggregate(str, (current, pair) => current.Replace(pair.Key, pair.Value));
+        return Map.Aggregate(str, (current, pair) => current.Replace(pair.Key, pair.Value));
     }
     private static string ReplaceBackUnavailable(string str)
     {
-        return map.Aggregate(str, (current, pair) => current.Replace(pair.Value, pair.Key));
+        return Map.Aggregate(str, (current, pair) => current.Replace(pair.Value, pair.Key));
     }
     public void EncryptFile(string filePath)
     {
